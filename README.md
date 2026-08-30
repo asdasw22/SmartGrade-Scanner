@@ -20,11 +20,11 @@ The repository includes a printable OMR template in PDF format along with a refe
 
 ### Download the Template PDF
 
-- [Download SmartGrade OMR Blank Template (PDF)](docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text%20(1).pdf)
+- [Download SmartGrade OMR Blank Template (PDF)](docs/templates/SmartGrade_OMR.pdf)
 
 ### Template Reference Image
 
-![SmartGrade OMR Blank Template](docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text%20(1)_page-0001.jpg)
+![SmartGrade OMR Blank Template](docs/templates/SmartGrade_OMR.jpg)
 
 ---
 
