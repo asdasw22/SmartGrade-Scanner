@@ -31,23 +31,25 @@ struct ScannerView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                cameraBackdrop
-                    .allowsHitTesting(false)
-                    .zIndex(0)
-
-                VStack {
-                    topBar
-                        .zIndex(2)
-                    Spacer()
-                    scanGuide
+            GeometryReader { proxy in
+                ZStack {
+                    cameraBackdrop
                         .allowsHitTesting(false)
+                        .zIndex(0)
+
+                    VStack {
+                        topBar
+                            .zIndex(20)
+                        Spacer(minLength: proxy.size.width >= 700 ? 24 : 12)
+                        scanGuide(in: proxy.size)
+                            .allowsHitTesting(false)
+                            .zIndex(1)
+                        Spacer(minLength: proxy.size.width >= 700 ? 24 : 12)
+                        if processing { processingBadge.allowsHitTesting(false) }
+                        if let scannerMessage { messageBadge(scannerMessage).allowsHitTesting(false) }
+                    }
                         .zIndex(1)
-                    Spacer()
-                    if processing { processingBadge.allowsHitTesting(false) }
-                    if let scannerMessage { messageBadge(scannerMessage).allowsHitTesting(false) }
                 }
-                .zIndex(1)
             }
             .safeAreaInset(edge: .bottom) {
                 controls
@@ -155,19 +157,27 @@ struct ScannerView: View {
         .padding()
     }
 
-    private var scanGuide: some View {
+    private func scanGuide(in size: CGSize) -> some View {
+        let isPadSize = size.width >= 700 || size.height >= 900
+        let horizontalPadding: CGFloat = isPadSize ? 72 : 28
+        let widthLimit = max(260, size.width - (horizontalPadding * 2))
+        let heightLimit = max(340, size.height - (isPadSize ? 260 : 220))
+        let maxGuideWidth: CGFloat = isPadSize ? 640 : 430
+        let guideWidth = min(min(widthLimit, heightLimit * 0.707), maxGuideWidth)
+
         RoundedRectangle(cornerRadius: 22)
             .stroke(processing ? .orange : .white, style: StrokeStyle(lineWidth: 3, dash: [10]))
-            .frame(maxWidth: 430)
+            .frame(width: guideWidth)
             .aspectRatio(0.707, contentMode: .fit)
-            .padding(28)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, isPadSize ? 20 : 28)
             .overlay(alignment: .bottom) {
                 Text(guideText)
-                    .font(.headline)
+                    .font(isPadSize ? .title3.bold() : .headline)
                     .foregroundStyle(.white)
                     .padding(12)
                     .background(.black.opacity(0.6), in: Capsule())
-                    .padding(.bottom, 45)
+                    .padding(.bottom, isPadSize ? 55 : 45)
             }
     }
 
