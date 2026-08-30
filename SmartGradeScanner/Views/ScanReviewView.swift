@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 
 struct ScanReviewView: View {
     @EnvironmentObject private var store: SmartGradeStore
