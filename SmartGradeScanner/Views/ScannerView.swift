@@ -67,7 +67,6 @@ struct ScannerView: View {
                 }
                 selectedImage = image
                 scannerMessage = store.isArabic ? "تم التقاط المستند" : "Document captured"
-                Task { await processCurrent() }
             } onCancel: {
                 showDocumentScanner = false
             }
@@ -77,7 +76,6 @@ struct ScannerView: View {
                 showSystemCamera = false
                 selectedImage = image
                 scannerMessage = store.isArabic ? "تم التقاط الصورة" : "Photo captured"
-                Task { await processCurrent() }
             } onCancel: {
                 showSystemCamera = false
             }
@@ -139,6 +137,20 @@ struct ScannerView: View {
                     .background(.ultraThinMaterial, in: Circle())
             }
             .tint(.white)
+
+            if selectedImage != nil {
+                Button {
+                    Task { await processCurrent() }
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white, .green)
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                .disabled(processing)
+                .accessibilityLabel(store.isArabic ? "تحليل الصورة" : "Analyze image")
+            }
         }
         .padding()
     }
