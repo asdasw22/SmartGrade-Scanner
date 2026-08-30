@@ -266,10 +266,10 @@ docs/
 - `SmartGradeScanner/Views/ScanReviewView.swift`
   Review screen displayed after processing a scan.
 
-- `docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text (1).pdf`
+- `docs/templates/SmartGrade_OMR.pdf`
   Printable OMR exam template in PDF format.
 
-- `docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text (1)_page-0001.jpg`
+- `docs/templates/SmartGrade_OMR.jpg`
   Reference image of the PDF template.
 
 ---
