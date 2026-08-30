@@ -1,4 +1,4 @@
-﻿import SwiftUI
+import SwiftUI
 import PhotosUI
 import VisionKit
 import UIKit
@@ -18,66 +18,122 @@ struct ScannerView: View {
     @State private var scannerMessage: String?
 
     var activeExam: Exam? {
-        store.exams.first { $0.id == (activeExamId.isEmpty ? (selectedExamId ?? "") : activeExamId) } ?? store.exams.first
+        store.exams.first {
+            $0.id == (activeExamId.isEmpty ? (selectedExamId ?? "") : activeExamId)
+        } ?? store.exams.first
     }
 
     var activeTemplate: TemplateDefinition? {
         guard let exam = activeExam else { return nil }
-        return store.templates.first { $0.id == exam.templateId }?.definition ?? store.templates.first?.definition
+        return store.templates.first { $0.id == exam.templateId }?.definition
+            ?? store.templates.first?.definition
     }
 
-    var canUseDocumentScanner: Bool { VNDocumentCameraViewController.isSupported }
-    var canUseSystemCamera: Bool { UIImagePickerController.isSourceTypeAvailable(.camera) }
+    var canUseDocumentScanner: Bool {
+        VNDocumentCameraViewController.isSupported
+    }
+
+    var canUseSystemCamera: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                cameraBackdrop
+            GeometryReader { proxy in
+                ZStack {
+                    cameraBackdrop
+                        .allowsHitTesting(false)
+                        .zIndex(0)
 
-                VStack {
-                    topBar
-                    Spacer()
-                    scanGuide
-                    Spacer()
-                    if processing { processingBadge }
-                    if let scannerMessage { messageBadge(scannerMessage) }
-                    controls
+                    VStack {
+                        topBar
+                            .zIndex(20)
+
+                        Spacer(minLength: proxy.size.width >= 700 ? 24 : 12)
+
+                        scanGuide(in: proxy.size)
+                            .allowsHitTesting(false)
+                            .zIndex(1)
+
+                        Spacer(minLength: proxy.size.width >= 700 ? 24 : 12)
+
+                        if processing {
+                            processingBadge
+                                .allowsHitTesting(false)
+                        }
+
+                        if let scannerMessage {
+                            messageBadge(scannerMessage)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .zIndex(1)
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                controls
+                    .zIndex(10)
             }
             .navigationTitle(store.isArabic ? "المسح" : "Scan")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .onAppear { activeExamId = selectedExamId ?? store.exams.first?.id ?? "" }
-        .onChange(of: selectedPhoto) { _, newItem in Task { await loadPhoto(newItem) } }
+        .onAppear {
+            activeExamId = selectedExamId ?? store.exams.first?.id ?? ""
+        }
+        .onChange(of: selectedPhoto) { _, newItem in
+            Task {
+                await loadPhoto(newItem)
+            }
+        }
         .fullScreenCover(isPresented: $showDocumentScanner) {
             DocumentScannerView { images in
                 showDocumentScanner = false
+
                 guard let image = images.first else {
-                    scannerMessage = store.isArabic ? "لم يتم التقاط أي صفحة." : "No page captured."
+                    scannerMessage = store.isArabic
+                        ? "لم يتم التقاط أي صفحة."
+                        : "No page captured."
                     return
                 }
+
                 selectedImage = image
-                scannerMessage = store.isArabic ? "تم التقاط المستند" : "Document captured"
-                Task { await processCurrent() }
+                scannerMessage = store.isArabic
+                    ? "تم التقاط المستند"
+                    : "Document captured"
             } onCancel: {
                 showDocumentScanner = false
             }
-            .ignoresSafeArea()
         }
         .fullScreenCover(isPresented: $showSystemCamera) {
             SystemCameraView { image in
                 showSystemCamera = false
                 selectedImage = image
-                scannerMessage = store.isArabic ? "تم التقاط الصورة" : "Photo captured"
-                Task { await processCurrent() }
+                scannerMessage = store.isArabic
+                    ? "تم التقاط الصورة"
+                    : "Photo captured"
             } onCancel: {
                 showSystemCamera = false
             }
-            .ignoresSafeArea()
         }
-        .sheet(item: Binding(get: { review.map { ReviewBox(result: $0) } }, set: { if $0 == nil { review = nil } })) { box in
+        .sheet(
+            item: Binding(
+                get: {
+                    review.map {
+                        ReviewBox(result: $0)
+                    }
+                },
+                set: {
+                    if $0 == nil {
+                        review = nil
+                    }
+                }
+            )
+        ) { box in
             if let exam = activeExam {
-                ScanReviewView(omr: box.result, exam: exam) { result in
+                ScanReviewView(
+                    omr: box.result,
+                    exam: exam
+                ) { result in
                     store.saveResult(result)
                     review = nil
                 } onDiscard: {
@@ -89,16 +145,31 @@ struct ScannerView: View {
 
     private var cameraBackdrop: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.black
+                .ignoresSafeArea()
+
             if let selectedImage {
                 Image(uiImage: selectedImage)
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-                    .overlay(Color.black.opacity(0.28).ignoresSafeArea())
+                    .overlay(
+                        Color.black
+                            .opacity(0.28)
+                            .ignoresSafeArea()
+                    )
             } else {
-                LinearGradient(colors: [.black, .black.opacity(0.86), .gray.opacity(0.25)], startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        .black,
+                        .black.opacity(0.86),
+                        .gray.opacity(0.25)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+
                 Image(systemName: "camera.viewfinder")
                     .font(.system(size: 96, weight: .thin))
                     .foregroundStyle(.white.opacity(0.16))
@@ -109,53 +180,127 @@ struct ScannerView: View {
     private var topBar: some View {
         HStack {
             Menu {
-                Picker(store.isArabic ? "الاختبار" : "Exam", selection: $activeExamId) {
+                Picker(
+                    store.isArabic ? "الاختبار" : "Exam",
+                    selection: $activeExamId
+                ) {
                     ForEach(store.exams) { exam in
-                        Text("\(exam.name) (\(exam.questions.count)Q)").tag(exam.id)
+                        Text("\(exam.name) (\(exam.questions.count)Q)")
+                            .tag(exam.id)
                     }
                 }
             } label: {
-                Label(activeExam?.name ?? (store.isArabic ? "مسح سريع" : "Quick Scan"), systemImage: "doc.text")
-                    .font(.subheadline.bold())
-                    .lineLimit(1)
-                    .padding(10)
-                    .background(.ultraThinMaterial, in: Capsule())
+                Label(
+                    activeExam?.name
+                        ?? (store.isArabic ? "مسح سريع" : "Quick Scan"),
+                    systemImage: "doc.text"
+                )
+                .font(.subheadline.bold())
+                .lineLimit(1)
+                .padding(10)
+                .background(.ultraThinMaterial, in: Capsule())
             }
             .tint(.white)
 
             Spacer()
 
-            PhotosPicker(selection: $selectedPhoto, matching: .images) {
+            PhotosPicker(
+                selection: $selectedPhoto,
+                matching: .images
+            ) {
                 Image(systemName: "photo.on.rectangle")
                     .font(.title3)
                     .padding(10)
                     .background(.ultraThinMaterial, in: Circle())
             }
             .tint(.white)
+
+            if selectedImage != nil {
+                Button {
+                    Task {
+                        await processCurrent()
+                    }
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white, .green)
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                .disabled(processing)
+                .accessibilityLabel(
+                    store.isArabic
+                        ? "تحليل الصورة"
+                        : "Analyze image"
+                )
+            }
         }
         .padding()
     }
 
-    private var scanGuide: some View {
-        RoundedRectangle(cornerRadius: 22)
-            .stroke(processing ? .orange : .white, style: StrokeStyle(lineWidth: 3, dash: [10]))
-            .frame(maxWidth: 430)
+    private func scanGuide(in size: CGSize) -> some View {
+        let isPadSize = size.width >= 700 || size.height >= 900
+        let horizontalPadding: CGFloat = isPadSize ? 72 : 28
+        let widthLimit = max(
+            260,
+            size.width - (horizontalPadding * 2)
+        )
+        let heightLimit = max(
+            340,
+            size.height - (isPadSize ? 260 : 220)
+        )
+        let maxGuideWidth: CGFloat = isPadSize ? 640 : 430
+        let guideWidth = min(
+            min(widthLimit, heightLimit * 0.707),
+            maxGuideWidth
+        )
+
+        return RoundedRectangle(cornerRadius: 22)
+            .stroke(
+                processing ? .orange : .white,
+                style: StrokeStyle(
+                    lineWidth: 3,
+                    dash: [10]
+                )
+            )
+            .frame(width: guideWidth)
             .aspectRatio(0.707, contentMode: .fit)
-            .padding(28)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, isPadSize ? 20 : 28)
             .overlay(alignment: .bottom) {
                 Text(guideText)
-                    .font(.headline)
+                    .font(
+                        isPadSize
+                            ? .title3.bold()
+                            : .headline
+                    )
                     .foregroundStyle(.white)
                     .padding(12)
-                    .background(.black.opacity(0.6), in: Capsule())
-                    .padding(.bottom, 45)
+                    .background(
+                        .black.opacity(0.6),
+                        in: Capsule()
+                    )
+                    .padding(
+                        .bottom,
+                        isPadSize ? 55 : 45
+                    )
             }
     }
 
     private var guideText: String {
-        if processing { return processor.stage.arabicMessage }
-        if selectedImage != nil { return store.isArabic ? "الصورة جاهزة للتحليل" : "Image ready to scan" }
-        return store.isArabic ? "ضع ورقة الإجابة داخل الإطار" : "Place the answer sheet inside the frame"
+        if processing {
+            return processor.stage.arabicMessage
+        }
+
+        if selectedImage != nil {
+            return store.isArabic
+                ? "الصورة جاهزة للتحليل"
+                : "Image ready to scan"
+        }
+
+        return store.isArabic
+            ? "ضع ورقة الإجابة داخل الإطار"
+            : "Place the answer sheet inside the frame"
     }
 
     private var controls: some View {
@@ -164,27 +309,46 @@ struct ScannerView: View {
                 if canUseDocumentScanner {
                     showDocumentScanner = true
                 } else {
-                    scannerMessage = store.isArabic ? "ماسح المستندات غير مدعوم" : "Document scanner unavailable"
+                    scannerMessage = store.isArabic
+                        ? "ماسح المستندات غير مدعوم"
+                        : "Document scanner unavailable"
                 }
             } label: {
-                Label(store.isArabic ? "Document" : "Document", systemImage: "doc.viewfinder")
+                Label(
+                    store.isArabic ? "Document" : "Document",
+                    systemImage: "doc.viewfinder"
+                )
             }
             .buttonStyle(.borderedProminent)
             .disabled(processing)
 
             Button {
                 if selectedImage != nil {
-                    Task { await processCurrent() }
+                    Task {
+                        await processCurrent()
+                    }
                 } else if canUseSystemCamera {
                     showSystemCamera = true
                 } else {
-                    scannerMessage = store.isArabic ? "الكاميرا غير متاحة" : "Camera unavailable"
+                    scannerMessage = store.isArabic
+                        ? "الكاميرا غير متاحة"
+                        : "Camera unavailable"
                 }
             } label: {
-                Image(systemName: selectedImage == nil ? "circle.fill" : "checkmark.circle.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.white)
-                    .overlay { Circle().stroke(.black.opacity(0.3), lineWidth: 2) }
+                Image(
+                    systemName: selectedImage == nil
+                        ? "circle.fill"
+                        : "checkmark.circle.fill"
+                )
+                .font(.system(size: 64))
+                .foregroundStyle(.white)
+                .overlay {
+                    Circle()
+                        .stroke(
+                            .black.opacity(0.3),
+                            lineWidth: 2
+                        )
+                }
             }
             .disabled(processing)
 
@@ -195,12 +359,23 @@ struct ScannerView: View {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title)
                     .frame(width: 90)
-                    .foregroundStyle(selectedImage == nil ? .white.opacity(0.35) : .white)
+                    .foregroundStyle(
+                        selectedImage == nil
+                            ? .white.opacity(0.35)
+                            : .white
+                    )
             }
-            .disabled(selectedImage == nil || processing)
+            .disabled(
+                selectedImage == nil || processing
+            )
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 24)
-        .padding(.bottom, 22)
+        .padding(.top, 14)
+        .padding(.bottom, 12)
+        .background(.ultraThinMaterial)
+        .contentShape(Rectangle())
+        .zIndex(10)
     }
 
     private var processingBadge: some View {
@@ -208,12 +383,20 @@ struct ScannerView: View {
             ProgressView(value: processor.progress)
                 .tint(.orange)
                 .frame(width: 120)
+
             Text("\(Int(processor.progress * 100))%")
-                .font(.caption.monospacedDigit().bold())
+                .font(
+                    .caption
+                        .monospacedDigit()
+                        .bold()
+                )
         }
         .foregroundStyle(.white)
         .padding(12)
-        .background(.black.opacity(0.6), in: Capsule())
+        .background(
+            .black.opacity(0.6),
+            in: Capsule()
+        )
     }
 
     private func messageBadge(_ text: String) -> some View {
@@ -222,23 +405,48 @@ struct ScannerView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(.black.opacity(0.6), in: Capsule())
+            .background(
+                .black.opacity(0.6),
+                in: Capsule()
+            )
     }
 
     func loadPhoto(_ item: PhotosPickerItem?) async {
-        guard let data = try? await item?.loadTransferable(type: Data.self), let image = UIImage(data: data) else { return }
+        guard
+            let data = try? await item?.loadTransferable(type: Data.self),
+            let image = UIImage(data: data)
+        else {
+            return
+        }
+
         selectedImage = image
-        scannerMessage = store.isArabic ? "تم اختيار الصورة" : "Image selected"
+        scannerMessage = store.isArabic
+            ? "تم اختيار الصورة"
+            : "Image selected"
     }
 
     func processCurrent() async {
-        guard let image = selectedImage, let template = activeTemplate else { return }
+        guard
+            let image = selectedImage,
+            let template = activeTemplate
+        else {
+            return
+        }
+
         processing = true
         scannerMessage = nil
-        let result = await processor.process(image: image, template: template)
+
+        let result = await processor.process(
+            image: image,
+            template: template
+        )
+
         processing = false
         review = result
     }
 }
 
-struct ReviewBox: Identifiable, Equatable { let id = UUID(); let result: OMRProcessingResult }
+struct ReviewBox: Identifiable, Equatable {
+    let id = UUID()
+    let result: OMRProcessingResult
+}
