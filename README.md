@@ -1,104 +1,141 @@
 # SmartGrade Scanner
 
-تطبيق iOS مبني بـ **SwiftUI** لمساعدة المعلمين على مسح أوراق الإجابات بنظام **OMR**، قراءة رقم الطالب والإجابات من الصور، تصحيح الاختبارات تلقائيًا، مراجعة النتائج يدويًا عند الحاجة، وعرض إحصائيات الأداء وتصدير النتائج بصيغة CSV.
+SmartGrade Scanner is an iOS application built with **SwiftUI** for scanning and grading OMR-style answer sheets. It helps teachers capture exam sheets, read student IDs and selected answers, grade exams automatically, review uncertain scans manually, view analytics, and export results as CSV.
+
+The app is designed to work fully on-device. It does not require a backend server or an external database in the current codebase.
 
 ---
 
-## نظرة عامة
+## Overview
 
-يوفر SmartGrade Scanner واجهة عربية/إنجليزية لإدارة الاختبارات والطلاب والصفوف، ثم مسح أوراق الإجابة باستخدام الكاميرا أو ماسح المستندات أو الصور الموجودة في مكتبة الصور. بعد المسح يقوم التطبيق بتحليل الدوائر المظللة، مطابقة الطالب إن كان مسجلًا، حساب الدرجة، ثم حفظ النتيجة داخل التطبيق.
+SmartGrade Scanner provides a bilingual Arabic/English interface for managing exams, students, classrooms, OMR templates, scan results, and exam statistics.
 
-المشروع لا يعتمد على خادم خارجي أو قاعدة بيانات خارجية؛ البيانات تحفظ محليًا داخل التطبيق باستخدام `UserDefaults`.
-
----
-
-## الميزات
-
-- مسح أوراق الإجابة باستخدام:
-  - ماسح المستندات من Apple عبر `VisionKit`.
-  - كاميرا النظام.
-  - اختيار صورة من مكتبة الصور عبر `PhotosUI`.
-- قراءة رقم الطالب من شبكة OMR.
-- قراءة إجابات الاختيار من متعدد A/B/C/D/E.
-- دعم قوالب افتراضية:
-  - قالب 20 سؤالًا.
-  - قالب 50 سؤالًا.
-- إنشاء وإدارة:
-  - الاختبارات.
-  - الطلاب.
-  - الصفوف/الفصول.
-  - مفاتيح الإجابة.
-- تصحيح تلقائي وحساب:
-  - الدرجة النهائية.
-  - النسبة المئوية.
-  - عدد الإجابات الصحيحة والخاطئة والفارغة والمتعددة.
-- شاشة مراجعة بعد المسح لتعديل رقم الطالب أو الإجابات قبل حفظ النتيجة.
-- إحصائيات للاختبارات تشمل:
-  - عدد الطلاب الذين تم مسح أوراقهم.
-  - المتوسط.
-  - أعلى درجة.
-  - نسبة النجاح.
-  - توزيع الدرجات.
-  - تحليل الأسئلة.
-- تصدير النتائج بصيغة CSV ومشاركتها من داخل iOS.
-- دعم الاتجاه من اليمين إلى اليسار عند استخدام العربية.
-- بيانات تجريبية افتراضية عند أول تشغيل.
+The scanning workflow supports images from the document scanner, system camera, or photo library. After an image is selected, the app analyzes the answer sheet, reads the student ID grid, detects marked answer bubbles, grades the sheet against the selected exam answer key, and allows the teacher to review and correct the result before saving it.
 
 ---
 
-## التقنيات المستخدمة
+## Exam Template PDFs and Images
+
+The repository includes printable and visual template assets generated from the same normalized coordinates used in:
+
+```text
+SmartGradeScanner/Services/DefaultTemplateFactory.swift
+```
+
+These assets are useful for documentation, testing, and printing sample OMR answer sheets.
+
+> Note: The generated PDFs and images are based on the current default template definitions. If you change the template coordinates in code, regenerate these assets using `py docs/templates/generate_templates.py` or `python docs/templates/generate_templates.py`.
+
+### Available Templates
+
+| Template | Printable PDF | Preview Image |
+| --- | --- | --- |
+| 20-question standard template | [Download PDF](docs/templates/smartgrade-template-20q.pdf) | [Open SVG](docs/templates/smartgrade-template-20q.svg) |
+| 50-question standard template | [Download PDF](docs/templates/smartgrade-template-50q.pdf) | [Open SVG](docs/templates/smartgrade-template-50q.svg) |
+
+### 20-Question Template Preview
+
+![SmartGrade 20-question OMR template](docs/templates/smartgrade-template-20q.svg)
+
+### 50-Question Template Preview
+
+![SmartGrade 50-question OMR template](docs/templates/smartgrade-template-50q.svg)
+
+### Template Layout Details
+
+Both templates include:
+
+- Four black corner markers for page alignment.
+- A student ID grid with **9 columns × 10 digits**.
+- Multiple-choice answer bubbles for choices **A, B, C, D, E**.
+- A page aspect ratio close to A4: `0.707`.
+
+The default student ID prefix in the code is:
+
+```text
+320
+```
+
+Current default templates:
+
+- `SmartGrade 20-Question Standard Template`
+- `SmartGrade 50-Question Standard Template`
+
+---
+
+## Features
+
+- Scan answer sheets using Apple document scanner through `VisionKit`, the system camera, or photo library image selection through `PhotosUI`.
+- Read a student ID from an OMR digit grid.
+- Detect selected answer bubbles for choices A/B/C/D/E.
+- Support default OMR templates for 20-question and 50-question exams.
+- Manage exams, students, classrooms, and answer keys.
+- Automatically calculate final score, maximum score, percentage, correct answers, wrong answers, empty answers, and multiple-mark answers.
+- Manual scan review before saving results.
+- Flag uncertain, weak, invalid, or multiple answers for review.
+- Match scanned student IDs against registered students.
+- View exam analytics, including total scanned students, average percentage, highest score, pass rate, score distribution, and question-level analysis.
+- Export exam results as CSV and share them using the iOS share sheet.
+- Local sample data seeded on first launch.
+- Right-to-left layout support when Arabic mode is active.
+
+---
+
+## Tech Stack
 
 - **Swift 5**
 - **SwiftUI**
 - **UIKit**
-- **VisionKit** لمسح المستندات.
-- **PhotosUI** لاختيار الصور.
-- **Combine** لإدارة الحالة.
-- **CoreGraphics** لمعالجة الصور وقراءة قيم البكسل.
-- **UserDefaults** لحفظ البيانات محليًا.
-- **GitHub Actions** لبناء أرشيف iOS وإنتاج IPA غير موقّع.
+- **VisionKit** for document scanning
+- **PhotosUI** for importing images from the photo library
+- **Combine** for observable app state
+- **CoreGraphics** for image and pixel processing
+- **UserDefaults** for local data persistence
+- **GitHub Actions** for building an unsigned iOS IPA artifact
 
-لا توجد حزم خارجية مطلوبة في المشروع حاليًا.
-
----
-
-## المتطلبات
-
-- macOS لتشغيل Xcode وبناء تطبيق iOS.
-- Xcode يدعم iOS 17 أو أحدث.
-- iOS 17.0 أو أحدث حسب إعدادات المشروع.
-- جهاز iPhone أو iPad أو iOS Simulator.
-- لاستخدام الكاميرا فعليًا يفضل جهاز حقيقي، لأن بعض وظائف الكاميرا/ماسح المستندات قد لا تعمل بالكامل على المحاكي.
-
-إعدادات المشروع الحالية:
-
-- اسم التطبيق: `SmartGrade Scanner`
-- اسم الـ Scheme: `SmartGradeScanner`
-- Bundle Identifier: `com.smartgrade.scanner`
-- Deployment Target: `iOS 17.0`
-- الأجهزة المستهدفة: iPhone و iPad
+The current project does not use external Swift packages.
 
 ---
 
-## تشغيل المشروع محليًا
+## Requirements
 
-1. افتح الملف التالي باستخدام Xcode:
+- macOS with Xcode installed
+- Xcode version capable of building iOS 17 apps
+- iOS 17.0 or later
+- iPhone, iPad, or iOS Simulator
+- A real iPhone or iPad is recommended for camera and document-scanner testing
+
+Current Xcode project settings:
+
+- Project: `SmartGradeScanner.xcodeproj`
+- Scheme: `SmartGradeScanner`
+- App display name: `SmartGrade Scanner`
+- Bundle identifier: `com.smartgrade.scanner`
+- Deployment target: `iOS 17.0`
+- Supported devices: iPhone and iPad
+- Swift version: `5.0`
+
+---
+
+## Run Locally
+
+1. Open the project in Xcode:
 
    ```text
    SmartGradeScanner.xcodeproj
    ```
 
-2. اختر Scheme باسم:
+2. Select the scheme:
 
    ```text
    SmartGradeScanner
    ```
 
-3. اختر جهاز تشغيل:
-   - iPhone Simulator للتجربة العامة.
-   - iPhone/iPad حقيقي لتجربة الكاميرا وماسح المستندات.
+3. Choose a run destination:
+   - iOS Simulator for general UI testing.
+   - Real iPhone/iPad for camera and document scanner testing.
 
-4. اضغط Run من Xcode أو استخدم الاختصار:
+4. Run the app:
 
    ```text
    Cmd + R
@@ -106,9 +143,9 @@
 
 ---
 
-## البناء من سطر الأوامر
+## Build from the Command Line
 
-يمكن بناء المشروع على macOS باستخدام `xcodebuild`:
+Build for the iOS Simulator:
 
 ```bash
 xcodebuild \
@@ -119,7 +156,7 @@ xcodebuild \
   build
 ```
 
-لبناء أرشيف iOS بدون توقيع:
+Build an iOS archive without code signing:
 
 ```bash
 xcodebuild archive \
@@ -139,53 +176,56 @@ xcodebuild archive \
 
 ---
 
-## بناء IPA عبر GitHub Actions
+## Build an Unsigned IPA with GitHub Actions
 
-يوجد Workflow جاهز في:
+The repository includes a workflow at:
 
 ```text
 .github/workflows/build-ios-ipa.yml
 ```
 
-يقوم workflow بالتالي:
+The workflow runs on `macos-15` and performs the following steps:
 
-1. تشغيل البناء على `macos-15`.
-2. حل اعتماديات Swift Packages إن وجدت.
-3. بناء Archive بدون Code Signing.
-4. إنشاء ملف IPA غير موقّع:
+1. Checks out the repository.
+2. Shows the installed Xcode version.
+3. Resolves Swift package dependencies, if any exist.
+4. Builds an iOS archive without code signing.
+5. Creates an unsigned IPA from the archive.
+6. Uploads the generated artifacts.
 
-   ```text
-   build/SmartGradeScanner-unsigned.ipa
-   ```
+Generated artifact names:
 
-5. رفع المخرجات كـ artifacts:
-   - `SmartGradeScanner-unsigned-ipa`
-   - `SmartGradeScanner-xcarchive`
+- `SmartGradeScanner-unsigned-ipa`
+- `SmartGradeScanner-xcarchive`
 
-> ملاحظة: الـ IPA الناتج غير موقّع، لذلك يحتاج إلى توقيع مناسب قبل التثبيت على أجهزة حقيقية خارج بيئة التطوير.
+The unsigned IPA is generated at:
 
----
+```text
+build/SmartGradeScanner-unsigned.ipa
+```
 
-## طريقة الاستخدام
-
-1. افتح التطبيق.
-2. من تبويب **الاختبارات** أنشئ أو اختر اختبارًا وحدد مفتاح الإجابة.
-3. تأكد من وجود الطلاب والصفوف في تبويبي **الطلاب** و **الصفوف**.
-4. انتقل إلى تبويب **المسح**.
-5. اختر الاختبار المطلوب.
-6. التقط ورقة الإجابة أو اختر صورة من مكتبة الصور.
-7. اضغط زر التحليل عند ظهور الصورة.
-8. راجع النتيجة في شاشة المراجعة:
-   - رقم الطالب.
-   - الإجابات المقروءة.
-   - الدرجة والنسبة.
-   - أي إجابات تحتاج مراجعة.
-9. احفظ النتيجة.
-10. انتقل إلى **الإحصائيات** لمتابعة أداء الطلاب وتصدير CSV.
+> Important: The generated IPA is unsigned. It must be signed with a valid Apple certificate/provisioning profile before installation on real devices outside a development workflow.
 
 ---
 
-## بنية المشروع
+## How to Use the App
+
+1. Open SmartGrade Scanner.
+2. Go to the **Exams** tab and create or select an exam.
+3. Make sure the exam has the correct answer key and template.
+4. Add or review students in the **Students** tab.
+5. Add or review classrooms in the **Classes** tab.
+6. Go to the **Scan** tab.
+7. Select the exam you want to scan for.
+8. Capture a document, take a photo, or import an image from the photo library.
+9. Run image analysis.
+10. Review the scan result: student ID, matched student, selected answers, score, percentage, and answers that need manual review.
+11. Save the result.
+12. Open the **Statistics** tab to view performance analytics and export CSV results.
+
+---
+
+## Project Structure
 
 ```text
 SmartGradeScanner/
@@ -196,6 +236,7 @@ SmartGradeScanner/
 ├── Resources/
 │   └── Assets.xcassets/
 ├── Services/
+│   ├── CameraController.swift
 │   ├── DefaultTemplateFactory.swift
 │   ├── DocumentScannerService.swift
 │   ├── ExportServices.swift
@@ -214,81 +255,123 @@ SmartGradeScanner/
     ├── ScanReviewView.swift
     ├── StudentsView.swift
     └── TemplatesView.swift
+
+docs/
+└── templates/
+    ├── generate_templates.py
+    ├── smartgrade-template-20q.pdf
+    ├── smartgrade-template-20q.svg
+    ├── smartgrade-template-50q.pdf
+    └── smartgrade-template-50q.svg
 ```
 
 ---
 
-## شرح مختصر لأهم الملفات
+## Important Files
 
 - `SmartGradeScanner/App/SmartGradeScannerApp.swift`  
-  نقطة دخول التطبيق وحقن `SmartGradeStore` في البيئة.
+  App entry point. It creates and injects `SmartGradeStore` into the SwiftUI environment.
 
 - `SmartGradeScanner/Models/OMRModels.swift`  
-  يحتوي نماذج البيانات الأساسية مثل الطالب، الصف، الاختبار، القالب، النتيجة، وإجابات OMR.
+  Contains the main data models for answer choices, OMR results, templates, students, classrooms, exams, and saved results.
 
 - `SmartGradeScanner/Services/SmartGradeStore.swift`  
-  مسؤول عن إدارة الحالة وحفظ البيانات محليًا في `UserDefaults`.
+  Central observable store for app data. It persists templates, classrooms, students, exams, and results using `UserDefaults`.
+
+- `SmartGradeScanner/Services/DefaultTemplateFactory.swift`  
+  Defines the default 20-question and 50-question OMR template coordinates.
 
 - `SmartGradeScanner/Services/OMRProcessor.swift`  
-  مسؤول عن تحويل الصورة إلى تدرج رمادي، تحليل جودة الصورة، قراءة رقم الطالب، وقراءة الإجابات.
+  Converts images to grayscale, analyzes image quality, calibrates thresholds, reads student IDs, and classifies answer bubbles.
 
 - `SmartGradeScanner/Services/GradingService.swift`  
-  مسؤول عن حساب الدرجات وإعادة الحساب بعد التعديل اليدوي.
+  Calculates scores and recalculates results after manual edits.
 
 - `SmartGradeScanner/Services/StatisticsService.swift`  
-  يحسب إحصائيات الاختبار وتوزيع الدرجات وتحليل الأسئلة.
+  Computes score distribution, pass rate, averages, and question-level analytics.
 
 - `SmartGradeScanner/Services/ExportServices.swift`  
-  يولد CSV ويعرض نافذة المشاركة في iOS.
+  Generates CSV output and presents the iOS share sheet.
+
+- `SmartGradeScanner/Services/DocumentScannerService.swift`  
+  Wraps `VNDocumentCameraViewController` and `UIImagePickerController` for SwiftUI.
 
 - `SmartGradeScanner/Views/ScannerView.swift`  
-  واجهة المسح واختيار الصور وتشغيل المعالجة.
+  Main scanning interface.
 
 - `SmartGradeScanner/Views/ScanReviewView.swift`  
-  شاشة مراجعة نتيجة المسح قبل الحفظ.
+  Review screen displayed after processing a scan.
+
+- `docs/templates/generate_templates.py`  
+  Generates the PDF and SVG template assets used in this README.
 
 ---
 
-## الخصوصية والبيانات
+## Regenerating Template Assets
 
-- البيانات تحفظ محليًا على الجهاز باستخدام `UserDefaults`.
-- لا يوجد إرسال بيانات إلى خادم خارجي في الكود الحالي.
-- التطبيق يطلب صلاحيات:
-  - الكاميرا لمسح أوراق الإجابة.
-  - مكتبة الصور لاستيراد صور أوراق الإجابة.
+If template coordinates are changed in `DefaultTemplateFactory.swift`, regenerate the PDF and SVG files:
 
----
+```bash
+python docs/templates/generate_templates.py
+```
 
-## ملاحظات مهمة
+or on Windows if using the Python launcher:
 
-- جودة قراءة OMR تعتمد على وضوح الصورة، الإضاءة، ومحاذاة الورقة مع القالب المستخدم.
-- القوالب الافتراضية مبنية على إحداثيات نسبية داخل صفحة بنسبة A4 تقريبًا.
-- إذا ظهرت إجابات ضعيفة أو متعددة أو غير مؤكدة، سيعلّم التطبيق النتيجة بأنها تحتاج مراجعة يدوية.
-- ملف IPA الذي ينتجه GitHub Actions غير موقّع، ولا يعتبر ملف توزيع نهائي على App Store.
+```powershell
+py docs/templates/generate_templates.py
+```
 
----
+Generated files:
 
-## استكشاف الأخطاء
-
-### الكاميرا لا تعمل على المحاكي
-
-استخدم جهاز iPhone أو iPad حقيقي، لأن المحاكي لا يدعم كل وظائف الكاميرا وماسح المستندات.
-
-### لا تظهر نتائج دقيقة بعد المسح
-
-تأكد من:
-
-- استخدام قالب مطابق لورقة الإجابة.
-- أن الورقة واضحة وغير مائلة قدر الإمكان.
-- أن الدوائر مظللة بوضوح.
-- عدم وجود ظلال قوية أو إضاءة ضعيفة.
-
-### فشل البناء بسبب التوقيع
-
-أضف Team ID من إعدادات Xcode إذا أردت التشغيل على جهاز حقيقي، أو استخدم إعدادات البناء بدون توقيع كما في workflow.
+```text
+docs/templates/smartgrade-template-20q.pdf
+docs/templates/smartgrade-template-20q.svg
+docs/templates/smartgrade-template-50q.pdf
+docs/templates/smartgrade-template-50q.svg
+```
 
 ---
 
-## الترخيص
+## Privacy and Data Storage
 
-لا يوجد ملف ترخيص مرفق في المشروع حاليًا. أضف ملف `LICENSE` إذا كنت تريد تحديد شروط الاستخدام أو النشر.
+- All application data is stored locally on the device using `UserDefaults`.
+- The current codebase does not send data to a remote server.
+- The app uses camera permission to capture OMR answer sheets.
+- The app uses photo library permission to import answer sheet images.
+
+Current permission descriptions in the Xcode project:
+
+- Camera: `SmartGrade uses the camera to capture OMR answer sheets for grading.`
+- Photo Library: `SmartGrade uses the photo library to import answer sheet images.`
+
+---
+
+## Troubleshooting
+
+### Camera or document scanner does not work in the simulator
+
+Use a real iPhone or iPad. The iOS Simulator does not fully support all camera and document-scanning features.
+
+### Scan results are inaccurate
+
+Check the following:
+
+- The printed sheet matches the selected template.
+- The paper is flat and not heavily rotated.
+- The image is sharp and well-lit.
+- The answer bubbles are filled clearly with a dark pen.
+- There are no heavy shadows over the answer area.
+
+### The result is marked as needing review
+
+The app flags a result when it detects low confidence, weak marks, multiple marks, invalid regions, or poor image quality. Open the review screen and manually confirm the student ID and answers before saving.
+
+### Xcode build fails because of signing
+
+If you are running on a real device, configure a valid Apple Development Team in Xcode. For unsigned CI builds, use the no-signing settings shown in the GitHub Actions workflow.
+
+---
+
+## License
+
+No license file is currently included in this repository. Add a `LICENSE` file if you want to define usage, distribution, or contribution terms.
