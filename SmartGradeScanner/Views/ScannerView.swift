@@ -33,18 +33,25 @@ struct ScannerView: View {
         NavigationStack {
             ZStack {
                 cameraBackdrop
+                    .allowsHitTesting(false)
+                    .zIndex(0)
 
                 VStack {
                     topBar
+                        .zIndex(2)
                     Spacer()
                     scanGuide
+                        .allowsHitTesting(false)
+                        .zIndex(1)
                     Spacer()
-                    if processing { processingBadge }
-                    if let scannerMessage { messageBadge(scannerMessage) }
+                    if processing { processingBadge.allowsHitTesting(false) }
+                    if let scannerMessage { messageBadge(scannerMessage).allowsHitTesting(false) }
                 }
+                .zIndex(1)
             }
             .safeAreaInset(edge: .bottom) {
                 controls
+                    .zIndex(10)
             }
             .navigationTitle(store.isArabic ? "المسح" : "Scan")
             .navigationBarTitleDisplayMode(.inline)
@@ -204,6 +211,8 @@ struct ScannerView: View {
         .padding(.top, 14)
         .padding(.bottom, 12)
         .background(.ultraThinMaterial)
+        .contentShape(Rectangle())
+        .zIndex(10)
     }
 
     private var processingBadge: some View {
