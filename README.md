@@ -1,8 +1,8 @@
 # SmartGrade Scanner
 
-SmartGrade Scanner is an iOS application built with **SwiftUI** for scanning and grading OMR-style answer sheets. It helps teachers capture exam sheets, read student IDs and selected answers, grade exams automatically, review uncertain scans manually, view analytics, and export results as CSV.
+SmartGrade Scanner is an iOS application built with **SwiftUI** for scanning and grading OMR-style answer sheets. It helps teachers capture exam papers, read student IDs and selected answers, grade exams automatically, review uncertain scans manually, view analytics, and export results as CSV.
 
-The app is designed to work fully on-device. It does not require a backend server or an external database in the current codebase.
+The app is designed to work fully on-device. It does not require a backend server or external database in the current codebase.
 
 ---
 
@@ -14,59 +14,24 @@ The scanning workflow supports images from the document scanner, system camera, 
 
 ---
 
-## Exam Template PDFs and Images
+## Exam Template PDF and Reference Image
 
-The repository includes printable and visual template assets generated from the same normalized coordinates used in:
+The repository includes a printable OMR template in PDF format along with a reference image of the same template.
 
-```text
-SmartGradeScanner/Services/DefaultTemplateFactory.swift
-```
+### Download the Template PDF
 
-These assets are useful for documentation, testing, and printing sample OMR answer sheets.
+- [Download SmartGrade OMR Blank Template (PDF)](docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text%20(1).pdf)
 
-> Note: The generated PDFs and images are based on the current default template definitions. If you change the template coordinates in code, regenerate these assets using `py docs/templates/generate_templates.py` or `python docs/templates/generate_templates.py`.
+### Template Reference Image
 
-### Available Templates
-
-| Template | Printable PDF | Preview Image |
-| --- | --- | --- |
-| 20-question standard template | [Download PDF](docs/templates/smartgrade-template-20q.pdf) | [Open SVG](docs/templates/smartgrade-template-20q.svg) |
-| 50-question standard template | [Download PDF](docs/templates/smartgrade-template-50q.pdf) | [Open SVG](docs/templates/smartgrade-template-50q.svg) |
-
-### 20-Question Template Preview
-
-![SmartGrade 20-question OMR template](docs/templates/smartgrade-template-20q.svg)
-
-### 50-Question Template Preview
-
-![SmartGrade 50-question OMR template](docs/templates/smartgrade-template-50q.svg)
-
-### Template Layout Details
-
-Both templates include:
-
-- Four black corner markers for page alignment.
-- A student ID grid with **9 columns × 10 digits**.
-- Multiple-choice answer bubbles for choices **A, B, C, D, E**.
-- A page aspect ratio close to A4: `0.707`.
-
-The default student ID prefix in the code is:
-
-```text
-320
-```
-
-Current default templates:
-
-- `SmartGrade 20-Question Standard Template`
-- `SmartGrade 50-Question Standard Template`
+![SmartGrade OMR Blank Template](docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text%20(1)_page-0001.jpg)
 
 ---
 
 ## Features
 
-- Scan answer sheets using Apple document scanner through `VisionKit`, the system camera, or photo library image selection through `PhotosUI`.
-- Read a student ID from an OMR digit grid.
+- Scan answer sheets using Apple document scanner through `VisionKit`, system camera, or photo library image selection through `PhotosUI`.
+- Read student ID from an OMR digit grid.
 - Detect selected answer bubbles for choices A/B/C/D/E.
 - Support default OMR templates for 20-question and 50-question exams.
 - Manage exams, students, classrooms, and answer keys.
@@ -74,7 +39,7 @@ Current default templates:
 - Manual scan review before saving results.
 - Flag uncertain, weak, invalid, or multiple answers for review.
 - Match scanned student IDs against registered students.
-- View exam analytics, including total scanned students, average percentage, highest score, pass rate, score distribution, and question-level analysis.
+- View exam analytics including total scanned students, average percentage, highest score, pass rate, score distribution, and question-level analysis.
 - Export exam results as CSV and share them using the iOS share sheet.
 - Local sample data seeded on first launch.
 - Right-to-left layout support when Arabic mode is active.
@@ -93,17 +58,15 @@ Current default templates:
 - **UserDefaults** for local data persistence
 - **GitHub Actions** for building an unsigned iOS IPA artifact
 
-The current project does not use external Swift packages.
-
 ---
 
 ## Requirements
 
 - macOS with Xcode installed
-- Xcode version capable of building iOS 17 apps
+- Xcode version supporting iOS 17 or later
 - iOS 17.0 or later
 - iPhone, iPad, or iOS Simulator
-- A real iPhone or iPad is recommended for camera and document-scanner testing
+- A real iPhone/iPad is recommended for camera and document scanner testing
 
 Current Xcode project settings:
 
@@ -113,7 +76,6 @@ Current Xcode project settings:
 - Bundle identifier: `com.smartgrade.scanner`
 - Deployment target: `iOS 17.0`
 - Supported devices: iPhone and iPad
-- Swift version: `5.0`
 
 ---
 
@@ -132,7 +94,7 @@ Current Xcode project settings:
    ```
 
 3. Choose a run destination:
-   - iOS Simulator for general UI testing.
+   - iOS Simulator for general testing.
    - Real iPhone/iPad for camera and document scanner testing.
 
 4. Run the app:
@@ -188,7 +150,7 @@ The workflow runs on `macos-15` and performs the following steps:
 
 1. Checks out the repository.
 2. Shows the installed Xcode version.
-3. Resolves Swift package dependencies, if any exist.
+3. Resolves Swift package dependencies if any.
 4. Builds an iOS archive without code signing.
 5. Creates an unsigned IPA from the archive.
 6. Uploads the generated artifacts.
@@ -204,7 +166,7 @@ The unsigned IPA is generated at:
 build/SmartGradeScanner-unsigned.ipa
 ```
 
-> Important: The generated IPA is unsigned. It must be signed with a valid Apple certificate/provisioning profile before installation on real devices outside a development workflow.
+> Important: The generated IPA is unsigned. It must be signed with a valid Apple certificate and provisioning profile before installation on real devices outside a development workflow.
 
 ---
 
@@ -212,14 +174,19 @@ build/SmartGradeScanner-unsigned.ipa
 
 1. Open SmartGrade Scanner.
 2. Go to the **Exams** tab and create or select an exam.
-3. Make sure the exam has the correct answer key and template.
+3. Ensure the exam has the correct answer key and template.
 4. Add or review students in the **Students** tab.
 5. Add or review classrooms in the **Classes** tab.
 6. Go to the **Scan** tab.
-7. Select the exam you want to scan for.
+7. Select the exam you want to scan.
 8. Capture a document, take a photo, or import an image from the photo library.
 9. Run image analysis.
-10. Review the scan result: student ID, matched student, selected answers, score, percentage, and answers that need manual review.
+10. Review the scan result:
+    - Student ID
+    - Matched student
+    - Selected answers
+    - Score and percentage
+    - Answers that need manual review
 11. Save the result.
 12. Open the **Statistics** tab to view performance analytics and export CSV results.
 
@@ -258,84 +225,59 @@ SmartGradeScanner/
 
 docs/
 └── templates/
-    ├── generate_templates.py
-    ├── smartgrade-template-20q.pdf
-    ├── smartgrade-template-20q.svg
-    ├── smartgrade-template-50q.pdf
-    └── smartgrade-template-50q.svg
+    ├── SmartGrade_OMR_Blank_Student_ID_Dark_Text (1).pdf
+    └── SmartGrade_OMR_Blank_Student_ID_Dark_Text (1)_page-0001.jpg
 ```
 
 ---
 
 ## Important Files
 
-- `SmartGradeScanner/App/SmartGradeScannerApp.swift`  
-  App entry point. It creates and injects `SmartGradeStore` into the SwiftUI environment.
+- `SmartGradeScanner/App/SmartGradeScannerApp.swift`
+  App entry point. Creates and injects `SmartGradeStore` into the SwiftUI environment.
 
-- `SmartGradeScanner/Models/OMRModels.swift`  
+- `SmartGradeScanner/Models/OMRModels.swift`
   Contains the main data models for answer choices, OMR results, templates, students, classrooms, exams, and saved results.
 
-- `SmartGradeScanner/Services/SmartGradeStore.swift`  
-  Central observable store for app data. It persists templates, classrooms, students, exams, and results using `UserDefaults`.
+- `SmartGradeScanner/Services/SmartGradeStore.swift`
+  Central observable store for app data. Persists templates, classrooms, students, exams, and results using `UserDefaults`.
 
-- `SmartGradeScanner/Services/DefaultTemplateFactory.swift`  
+- `SmartGradeScanner/Services/DefaultTemplateFactory.swift`
   Defines the default 20-question and 50-question OMR template coordinates.
 
-- `SmartGradeScanner/Services/OMRProcessor.swift`  
+- `SmartGradeScanner/Services/OMRProcessor.swift`
   Converts images to grayscale, analyzes image quality, calibrates thresholds, reads student IDs, and classifies answer bubbles.
 
-- `SmartGradeScanner/Services/GradingService.swift`  
+- `SmartGradeScanner/Services/GradingService.swift`
   Calculates scores and recalculates results after manual edits.
 
-- `SmartGradeScanner/Services/StatisticsService.swift`  
+- `SmartGradeScanner/Services/StatisticsService.swift`
   Computes score distribution, pass rate, averages, and question-level analytics.
 
-- `SmartGradeScanner/Services/ExportServices.swift`  
+- `SmartGradeScanner/Services/ExportServices.swift`
   Generates CSV output and presents the iOS share sheet.
 
-- `SmartGradeScanner/Services/DocumentScannerService.swift`  
+- `SmartGradeScanner/Services/DocumentScannerService.swift`
   Wraps `VNDocumentCameraViewController` and `UIImagePickerController` for SwiftUI.
 
-- `SmartGradeScanner/Views/ScannerView.swift`  
+- `SmartGradeScanner/Views/ScannerView.swift`
   Main scanning interface.
 
-- `SmartGradeScanner/Views/ScanReviewView.swift`  
+- `SmartGradeScanner/Views/ScanReviewView.swift`
   Review screen displayed after processing a scan.
 
-- `docs/templates/generate_templates.py`  
-  Generates the PDF and SVG template assets used in this README.
+- `docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text (1).pdf`
+  Printable OMR exam template in PDF format.
 
----
-
-## Regenerating Template Assets
-
-If template coordinates are changed in `DefaultTemplateFactory.swift`, regenerate the PDF and SVG files:
-
-```bash
-python docs/templates/generate_templates.py
-```
-
-or on Windows if using the Python launcher:
-
-```powershell
-py docs/templates/generate_templates.py
-```
-
-Generated files:
-
-```text
-docs/templates/smartgrade-template-20q.pdf
-docs/templates/smartgrade-template-20q.svg
-docs/templates/smartgrade-template-50q.pdf
-docs/templates/smartgrade-template-50q.svg
-```
+- `docs/templates/SmartGrade_OMR_Blank_Student_ID_Dark_Text (1)_page-0001.jpg`
+  Reference image of the PDF template.
 
 ---
 
 ## Privacy and Data Storage
 
 - All application data is stored locally on the device using `UserDefaults`.
-- The current codebase does not send data to a remote server.
+- The current codebase does not send data to any remote server.
 - The app uses camera permission to capture OMR answer sheets.
 - The app uses photo library permission to import answer sheet images.
 
@@ -350,13 +292,13 @@ Current permission descriptions in the Xcode project:
 
 ### Camera or document scanner does not work in the simulator
 
-Use a real iPhone or iPad. The iOS Simulator does not fully support all camera and document-scanning features.
+Use a real iPhone or iPad. The iOS Simulator does not fully support all camera and document scanning features.
 
 ### Scan results are inaccurate
 
 Check the following:
 
-- The printed sheet matches the selected template.
+- The answer sheet matches the selected template.
 - The paper is flat and not heavily rotated.
 - The image is sharp and well-lit.
 - The answer bubbles are filled clearly with a dark pen.
